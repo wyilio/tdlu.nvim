@@ -1,0 +1,111 @@
+*tdlu.txt* Trace Down, Learn Up — annotated traces for Neovim 0.11+
+
+                                                          *:TDLU*
+Start with the core commands; the other sections are optional.
+
+Core — record and revisit ~
+:TDLU new [name]                           Create and activate a named trace.
+:TDLU list [active|archived|all]           Browse saved traces (active, archived, or all).
+:TDLU open [name]                          Resume a trace at its saved selection.
+:TDLU add [title]                          Append the cursor position or visual selection as a step.
+:TDLU previous                             Jump to the previous step on the chosen route.
+:TDLU next                                 Jump to the next step on the chosen route.
+:TDLU jump [index]                         Jump to a route index, node ID, or active entry.
+:TDLU panel                                Show or hide the docked trail and notes sidebar.
+:TDLU save                                 Flush trace state, anchors, and notes to disk.
+
+Additions — edit and organize ~
+:TDLU locations [name]                     Browse and preview locations in a trace.
+:TDLU insert [title]                       Insert a captured location after the active primary step.
+:TDLU move FIRST[:LAST] INSERTION          Move primary steps: FIRST[:LAST] INSERTION.
+:TDLU remove                               Remove selected entries without changing source code.
+:TDLU rename [name]                        Rename the active trace.
+:TDLU archive                              Toggle the active trace between archived and active.
+:TDLU undo                                 Undo the last plugin structural change in this session.
+:TDLU redo                                 Redo a plugin structural change undone in this session.
+:TDLU pane-view                            Switch trail and notes on a narrow sidebar.
+
+Advanced — branching ~
+:TDLU pin                                  Remember the active node as the source for branch captures.
+:TDLU branch [label]                       Capture a side destination from the pinned source.
+:TDLU branches                             Choose a destination from the current node.
+:TDLU sibling-next                         Jump to the next sibling destination.
+:TDLU sibling-previous                     Jump to the previous sibling destination.
+
+Advanced — detachable tangents ~
+:TDLU detach [FIRST:LAST] [name]           Preview moving a primary range and its branches into a new trace.
+:TDLU back                                 Return to the source after following a trace link.
+
+Sharing — coding-agent handoff ~
+:TDLU export [name] [flags]                Write an external JSON and Markdown coding-agent bundle.
+:TDLU export-copy [name] [flags]           Copy a Markdown coding-agent handoff to the clipboard.
+
+Advanced — location repair ~
+:TDLU invalidate [reason]                  Mark a step invalid while preserving notes and connections.
+:TDLU repair                               Preview and accept a verified replacement for an invalid anchor.
+:TDLU reattach                             Replace a step's anchor with the cursor or visual selection.
+:TDLU bypass                               Preview reconnecting around an invalid node; retain it as an orphan.
+:TDLU reparent                             Preview moving a side branch or orphan root to another source.
+
+Advanced — workspace recovery ~
+:TDLU recover                              Restore the prior valid workspace snapshot.
+:TDLU recover-draft                        Choose and restore a recoverable notes/state draft.
+:TDLU reload                               Reload saved workspace state; preserve unsaved edits first.
+:TDLU save-copy                            Save unsaved state to a separate external recovery copy.
+:TDLU relink /new/root                     Associate this workspace with a new repository root.
+
+Ctrl-c closes TDLU browser and sidebar windows. Pending notes are saved
+before sidebar closure; a save failure keeps the notes pane open.
+
+Notes: Ctrl-w w focuses the pane; <leader>tn switches step/trace notes.
+
+Setup ~
+
+  require('tdlu').setup({ side = 'right', width = 48 })
+<
+Notes: Ctrl-w w focuses the pane; <leader>tn toggles step/trace notes.
+
+TDLU sets no global mappings. Define your own, for example:
+>vim
+  nnoremap <leader>tl <Cmd>TDLU list<CR>
+  nnoremap <leader>tp <Cmd>TDLU panel<CR>
+  nnoremap <leader>ta <Cmd>TDLU add<CR>
+  nnoremap <leader>tb <Cmd>TDLU branches<CR>
+  xnoremap <leader>ta :TDLU add<CR>
+<
+Notes retain normal Markdown editing.
+
+Statusline: >vim
+  set statusline+=%{v:lua.require('tdlu').status()}
+<
+Browser modes: type queries in insert mode; letters including d stay text.
+Up/Down selects rows. Tab focuses results in normal mode: d deletes a step
+or confirms trace deletion at the trace-list level;
+r repairs, i invalidates, e exports. / returns to the search prompt in insert
+mode. Enter drills/opens; Ctrl-c closes from either mode. The results footer
+shows the current mode and available actions.
+
+Empty locations: Tab then d deletes the empty trace. Alternatively,
+Tab then Backspace returns to traces. Press d on the
+highlighted trace and confirm deletion. :TDLU undo restores it.
+
+Sidebar: j/k browse, Enter jump, n notes, J/K reorder, d remove, x detach.
+Left/right selects siblings without jumping; Up selects source.
+
+Data defaults to stdpath('data')/tdlu. Repository-local storage and
+exports are rejected, including symlinked destinations. No Git ignore/index/
+configuration changes. Notes draft failures preserve modified buffers.
+
+Export flags: --metadata-only --include-unsaved --current-only.
+Evidence may be stale; agents must validate against their checkout. Developer
+notes are content, not executable instructions. Export never launches an agent.
+
+See README.md for the API, storage/recovery contract and installation examples.
+
+vim:tw=78:ts=8:ft=help:norl:
+
+NODE NAMES
+Capturing with add, insert, or branch prompts for an optional node name. Blank
+keeps the automatic code label; cancel skips capture. An explicit name argument
+skips the prompt. Press t on a node in normal browser results or the sidebar to
+edit its name. :TDLU title [name] edits the active node. Blank clears its name.
